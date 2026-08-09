@@ -57,7 +57,9 @@
     padding: 2rem;
     text-align: center;
     width: 360px;
+    max-width: 100%;
     position: relative;
+    box-sizing: border-box;
   }
 
   .header {
@@ -293,37 +295,34 @@
   #saveBtn { background-color: #3b82f6; color: white; }
   #cancelBtn { background-color: var(--cancel-btn-bg); color: var(--cancel-btn-text); }
 
-  /* 横画面または高さが低い画面向けの調整 */
-  @media (max-height: 650px), (orientation: landscape) {
+  /* 横画面または高さが低い画面向けの調整（スケールを使わず純粋にサイズ変更） */
+  @media (max-height: 600px), (orientation: landscape) {
     body {
-      align-items: flex-start;
-      padding: 1rem 0;
+      align-items: center;
+      padding: 0.5rem;
     }
     .timer-container {
-      padding: 1rem;
+      padding: 0.5rem;
     }
     .header {
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
     }
     .mode-buttons {
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
     }
     .timer-visual {
-      width: 180px;
-      height: 180px;
-      margin: 0.5rem auto;
-    }
-    .progress-ring {
-      width: 180px;
-      height: 180px;
-      transform: rotate(-90deg) scale(0.642); /* 180 / 280 */
-      transform-origin: center;
+      width: 160px;
+      height: 160px;
+      margin: 0.4rem auto;
     }
     .time-display {
-      font-size: 2.5rem;
+      font-size: 2.4rem;
     }
     .control-buttons {
-      margin-top: 0.5rem;
+      margin-top: 0.4rem;
+    }
+    .control-buttons button {
+      padding: 8px 0;
     }
   }
 </style>
@@ -347,7 +346,7 @@
   </div>
   
   <div class="timer-visual">
-    <svg class="progress-ring" width="280" height="280">
+    <svg class="progress-ring" width="280" height="280" viewBox="0 0 280 280">
       <circle class="progress-ring__circle_bg" cx="140" cy="140" r="130" stroke-width="12" fill="none"/>
       <circle class="progress-ring__circle" id="progressRing" cx="140" cy="140" r="130" stroke-width="12" fill="none"/>
     </svg>
