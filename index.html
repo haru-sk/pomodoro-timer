@@ -588,21 +588,24 @@
       gainNode.connect(audioCtx.destination);
       
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(1760, startTime); 
+      osc.frequency.setValueAtTime(2637, startTime); 
       
       gainNode.gain.setValueAtTime(0, startTime);
       gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.01);
-      gainNode.gain.linearRampToValueAtTime(0, startTime + 0.1);
+      gainNode.gain.linearRampToValueAtTime(0, startTime + 0.08);
       
       osc.start(startTime);
-      osc.stop(startTime + 0.1);
+      osc.stop(startTime + 0.08);
     };
 
     const now = audioCtx.currentTime;
     playBeep(now);
-    playBeep(now + 0.15);
-    playBeep(now + 0.3);
+    playBeep(now + 0.12);
+    playBeep(now + 0.24);
+    
     playBeep(now + 0.45);
+    playBeep(now + 0.57);
+    playBeep(now + 0.69);
   }
 
   const modal = document.getElementById('settingsModal');
