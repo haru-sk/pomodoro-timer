@@ -218,21 +218,28 @@
     opacity: 0;
     transition: opacity 0.2s, background 0.3s;
     z-index: 100;
+    padding: 1rem;
+    box-sizing: border-box;
   }
   .modal-overlay.show { visibility: visible; opacity: 1; }
   
   .modal-content {
     background: var(--modal-bg);
-    padding: 2rem;
+    padding: 1.5rem;
     border-radius: 12px;
-    width: 280px;
+    width: 260px;
+    max-width: 90vw;
+    max-height: 90svh;
+    overflow-y: auto;
     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     transition: background 0.3s ease;
+    box-sizing: border-box;
   }
   .modal-content h3 { 
     margin-top: 0; 
     color: var(--text-color); 
-    margin-bottom: 1.5rem; 
+    margin-bottom: 1rem; 
+    font-size: 1.1rem;
     transition: color 0.3s ease;
   }
   
@@ -240,29 +247,29 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
     color: var(--btn-inactive-text);
     transition: color 0.3s ease;
   }
   
   .setting-row input, .setting-row select {
-    padding: 6px 10px;
+    padding: 4px 8px;
     background-color: var(--input-bg);
     color: var(--text-color);
     border: 1px solid var(--input-border);
     border-radius: 6px;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     transition: background-color 0.3s, color 0.3s, border-color 0.3s;
   }
   
   .setting-row input {
-    width: 70px;
+    width: 65px;
     text-align: right;
   }
 
   .setting-row select {
-    width: 110px;
+    width: 100px;
     cursor: pointer;
     border-radius: 6px;
     border: 1px solid var(--input-border);
@@ -274,7 +281,7 @@
   .setting-divider {
     height: 1px;
     background-color: var(--divider-color);
-    margin: 1.2rem 0;
+    margin: 0.8rem 0;
     transition: background-color 0.3s ease;
   }
 
@@ -282,14 +289,15 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 1.5rem;
+    margin-top: 1rem;
   }
   .modal-buttons button {
-    padding: 8px 16px;
+    padding: 6px 12px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
+    font-size: 0.9rem;
     transition: background-color 0.3s, color 0.3s;
   }
   #saveBtn { background-color: #3b82f6; color: white; }
@@ -322,6 +330,24 @@
     }
     .control-buttons button {
       padding: 8px 0;
+    }
+    .modal-content {
+      padding: 1rem 1.2rem;
+      max-height: 85svh;
+    }
+    .modal-content h3 {
+      margin-bottom: 0.6rem;
+      font-size: 1rem;
+    }
+    .setting-row {
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+    }
+    .setting-divider {
+      margin: 0.5rem 0;
+    }
+    .modal-buttons {
+      margin-top: 0.8rem;
     }
   }
 </style>
