@@ -294,6 +294,42 @@
   }
   #saveBtn { background-color: #3b82f6; color: white; }
   #cancelBtn { background-color: var(--cancel-btn-bg); color: var(--cancel-btn-text); }
+
+  /* 携帯の横画面や高さが低い画面向けの調整 */
+  @media (max-height: 600px) {
+    body {
+      overflow-y: auto;
+      position: relative;
+      height: auto;
+      min-height: 100svh;
+    }
+    .timer-container {
+      padding: 1rem;
+    }
+    .header {
+      margin-bottom: 0.6rem;
+    }
+    .mode-buttons {
+      margin-bottom: 0.6rem;
+    }
+    .timer-visual {
+      width: 190px;
+      height: 190px;
+      margin: 0.8rem auto;
+    }
+    .progress-ring {
+      width: 190px;
+      height: 190px;
+      transform: rotate(-90deg) scale(0.678); /* 190 / 280 */
+      transform-origin: center;
+    }
+    .time-display {
+      font-size: 2.8rem;
+    }
+    .control-buttons {
+      margin-top: 0.6rem;
+    }
+  }
 </style>
 </head>
 <body class="mode-work">
