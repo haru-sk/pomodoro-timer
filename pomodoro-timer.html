@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ポモドーロ・タイマー (完成版)</title>
+<style>
+  :root {
+    --bg-color: #f1f5f9;
+    --text-color: #0f172a;
+    --header-color: #64748b;
+    --btn-inactive-bg: #e2e8f0;
+    --btn-inactive-text: #475569;
+    --ring-bg: #e2e8f0;
+    --modal-bg: #ffffff;
+    --modal-overlay: rgba(0,0,0,0.4);
+    --divider-color: #cbd5e1; 
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+    --cancel-btn-bg: #e2e8f0;
+    --cancel-btn-text: #475569;
+    --reset-btn-bg: #94a3b8;
+  }
+
+  [data-theme="dark"] {
+    --bg-color: #1e293b;
+    --text-color: #f8fafc;
+    --header-color: #94a3b8;
+    --btn-inactive-bg: #334155;
+    --btn-inactive-text: #cbd5e1;
+    --ring-bg: #334155;
+    --modal-bg: #0f172a;
+    --modal-overlay: rgba(0,0,0,0.6);
+    --divider-color: #334155;
+    --input-bg: #1e293b;
+    --input-border: #334155;
+    --cancel-btn-bg: #334155;
+    --cancel-btn-text: #cbd5e1;
+    --reset-btn-bg: #475569;
+  }
+
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: var(--bg-color);
+    transition: background-color 0.3s ease;
+  }
+
+  .timer-container {
+    padding: 2rem;
+    text-align: center;
+    width: 360px;
+    position: relative;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    color: var(--header-color);
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+  }
+  
+  .settings-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--header-color);
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+  }
+  .settings-btn:hover { color: var(--text-color); }
+
+  .mode-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .mode-buttons button {
+    background-color: var(--btn-inactive-bg); 
+    color: var(--btn-inactive-text);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.85rem;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .mode-buttons button.work.active, .mode-buttons button.work:hover {
+    background-color: #3b82f6; color: white;
+  }
+  .mode-buttons button.break.active, .mode-buttons button.break:hover {
+    background-color: #14b8a6; color: white;
+  }
+  .mode-buttons button.long-break.active, .mode-buttons button.long-break:hover {
+    background-color: #6366f1; color: white;
+  }
+
+  .timer-visual {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 1.5rem auto;
+  }
+  
+  .progress-ring {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    transform: rotate(-90deg);
+  }
+  
+  .progress-ring__circle_bg { 
+    stroke: var(--ring-bg); 
+    transition: stroke 0.3s ease;
+  }
+  
+  .progress-ring__circle {
+    stroke-linecap: round;
+    transition: stroke 0.5s ease;
+  }
+
+  .mode-work .progress-ring__circle { stroke: #3b82f6; }
+  .mode-break .progress-ring__circle { stroke: #14b8a6; }
+  .mode-long-break .progress-ring__circle { stroke: #6366f1; }
+
+  .time-display {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4.5rem;
+    font-weight: bold;
+    margin: 0;
+    color: var(--text-color); 
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s ease;
+  }
+
+  .control-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 1rem;
+  }
+  
+  .control-buttons button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 0;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    transition: background-color 0.3s ease, opacity 0.2s;
+  }
+  
+  #toggleBtn { flex: 2; }
+  .mode-work #toggleBtn { background-color: #3b82f6; }
+  .mode-break #toggleBtn { background-color: #14b8a6; }
+  .mode-long-break #toggleBtn { background-color: #6366f1; }
+  #toggleBtn.paused-state { filter: brightness(0.8); }
+
+  #resetBtn {
+    flex: 1;
+    background-color: var(--reset-btn-bg); 
+  }
+  .control-buttons button:hover { opacity: 0.9; }
+
+  .cycle-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  
+  .cycle-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--btn-inactive-bg);
+    transition: background-color 0.3s;
+  }
+  
+  .cycle-dot.completed {
+    background-color: #3b82f6;
+  }
+  
+  [data-theme="dark"] .cycle-dot.completed {
+    background-color: #60a5fa;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--modal-overlay);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.3s;
+    z-index: 100;
+  }
+  .modal-overlay.show { visibility: visible; opacity: 1; }
+  
+  .modal-content {
+    background: var(--modal-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    width: 280px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    transition: background 0.3s ease;
+  }
+  .modal-content h3 { 
+    margin-top: 0; 
+    color: var(--text-color); 
+    margin-bottom: 1.5rem; 
+    transition: color 0.3s ease;
+  }
+  
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    color: var(--btn-inactive-text);
+    transition: color 0.3s ease;
+  }
+  
+  .setting-row input, .setting-row select {
+    padding: 6px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  }
+  
+  .setting-row input {
+    width: 70px;
+    text-align: right;
+  }
+
+  .setting-row select {
+    width: auto;
+    min-width: 100px;
+    text-align: left;
+    padding-left: 8px;
+    padding-right: 8px;
+    cursor: pointer;
+  }
+  
+  .setting-divider {
+    height: 1px;
+    background-color: var(--divider-color);
+    margin: 1.2rem 0;
+    transition: background-color 0.3s ease;
+  }
+
+  .modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 1.5rem;
+  }
+  .modal-buttons button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  #saveBtn { background-color: #3b82f6; color: white; }
+  #cancelBtn { background-color: var(--cancel-btn-bg); color: var(--cancel-btn-text); }
+</style>
+</head>
+<body class="mode-work">
+
+<div class="timer-container">
+  <div class="header">
+    <div id="cycleCounter" class="cycle-dots"></div>
+    <button class="settings-btn" onclick="openSettings()" title="設定">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="mode-buttons">
+    <button id="workModeBtn" class="work active" onclick="setMode('work')">作業</button>
+    <button id="breakModeBtn" class="break" onclick="setMode('break')">休憩</button>
+    <button id="longBreakModeBtn" class="long-break" onclick="setMode('long-break')">長めの休憩</button>
+  </div>
+  
+  <div class="timer-visual">
+    <svg class="progress-ring" width="280" height="280">
+      <circle class="progress-ring__circle_bg" cx="140" cy="140" r="130" stroke-width="12" fill="none"/>
+      <circle class="progress-ring__circle" id="progressRing" cx="140" cy="140" r="130" stroke-width="12" fill="none"/>
+    </svg>
+    <div class="time-display" id="time">25:00</div>
+  </div>
+  
+  <div class="control-buttons">
+    <button id="toggleBtn" onclick="toggleTimer()"></button>
+    <button id="resetBtn" onclick="resetTimer()" title="リセット">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-content">
+    <h3>設定</h3>
+    
+    <div class="setting-row">
+      <label>テーマ</label>
+      <select id="themeInput">
+        <option value="dark">ダーク</option>
+        <option value="light">ホワイト</option>
+      </select>
+    </div>
+    
+    <div class="setting-divider"></div>
+    
+    <div class="setting-row">
+      <label>現在の完了サイクル</label>
+      <input type="number" id="cycleInput" value="0" min="0" max="99">
+    </div>
+    
+    <div class="setting-divider"></div>
+    
+    <div class="setting-row">
+      <label>作業時間 (分)</label>
+      <input type="number" id="workInput" value="25" min="1" max="90">
+    </div>
+    <div class="setting-row">
+      <label>短い休憩 (分)</label>
+      <input type="number" id="breakInput" value="5" min="1" max="30">
+    </div>
+    <div class="setting-row">
+      <label>長めの休憩 (分)</label>
+      <input type="number" id="longBreakInput" value="15" min="1" max="60">
+    </div>
+    
+    <div class="modal-buttons">
+      <button id="cancelBtn" onclick="closeSettings()">キャンセル</button>
+      <button id="saveBtn" onclick="saveSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const iconPlay = `<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+  const iconPause = `<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+
+  let timeSettings = {
+    work: 25 * 60,
+    break: 5 * 60,
+    'long-break': 15 * 60
+  };
+  
+  let currentTheme = 'dark';
+  let currentMode = 'work';
+  let currentModeTimeMs = timeSettings[currentMode] * 1000;
+  let remainingMs = currentModeTimeMs;
+  let expectedEndTime = 0;
+  let animationFrameId = null;
+  let watchdogInterval = null; 
+  let isRunning = false;
+  let completedCycles = 0; 
+  const CYCLES_BEFORE_LONG_BREAK = 4;
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  
+  const htmlDoc = document.documentElement;
+  const body = document.body;
+  const timeDisplay = document.getElementById('time');
+  const progressRing = document.getElementById('progressRing');
+  const toggleBtn = document.getElementById('toggleBtn');
+  const cycleCounter = document.getElementById('cycleCounter');
+
+  const circleCircumference = 2 * Math.PI * 130; 
+  progressRing.style.strokeDasharray = `${circleCircumference} ${circleCircumference}`;
+  progressRing.style.strokeDashoffset = circleCircumference;
+
+  toggleBtn.innerHTML = iconPlay;
+
+  function updateCycleDots() {
+    cycleCounter.innerHTML = '';
+    const currentDotCount = completedCycles % CYCLES_BEFORE_LONG_BREAK;
+    
+    for (let i = 0; i < CYCLES_BEFORE_LONG_BREAK; i++) {
+      const dot = document.createElement('div');
+      dot.classList.add('cycle-dot');
+      if (i < currentDotCount) {
+        dot.classList.add('completed');
+      }
+      cycleCounter.appendChild(dot);
+    }
+  }
+
+  function updateDisplay(ms) {
+    const totalSeconds = Math.ceil(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    if (timeDisplay.textContent !== timeString) {
+      timeDisplay.textContent = timeString;
+      const modeText = currentMode === 'work' ? '作業中' : '休憩中';
+      document.title = `${timeString} - ${modeText}`;
+    }
+
+    if (currentModeTimeMs > 0) {
+        const progress = ms / currentModeTimeMs;
+        const offset = circleCircumference * (1 - progress);
+        progressRing.style.strokeDashoffset = -offset;
+    } else {
+        progressRing.style.strokeDashoffset = -circleCircumference;
+    }
+  }
+
+  function timerLoop() {
+    if (!isRunning) return;
+    
+    const now = Date.now();
+    remainingMs = Math.max(0, expectedEndTime - now);
+    
+    updateDisplay(remainingMs);
+    
+    if (remainingMs > 0) {
+      animationFrameId = requestAnimationFrame(timerLoop);
+    } else {
+      handleTimerComplete();
+    }
+  }
+
+  function toggleTimer() {
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+
+    if (isRunning) {
+      isRunning = false;
+      cancelAnimationFrame(animationFrameId);
+      clearInterval(watchdogInterval);
+      toggleBtn.innerHTML = iconPlay;
+      toggleBtn.classList.remove('paused-state');
+    } else {
+      if (remainingMs <= 0) return;
+      isRunning = true;
+      expectedEndTime = Date.now() + remainingMs;
+      toggleBtn.innerHTML = iconPause;
+      toggleBtn.classList.add('paused-state');
+      
+      animationFrameId = requestAnimationFrame(timerLoop);
+
+      watchdogInterval = setInterval(() => {
+        if (isRunning && Date.now() >= expectedEndTime) {
+          handleTimerComplete();
+        }
+      }, 1000);
+    }
+  }
+
+  function handleTimerComplete() {
+    if (!isRunning) return; 
+    isRunning = false;
+    cancelAnimationFrame(animationFrameId);
+    clearInterval(watchdogInterval);
+    toggleBtn.innerHTML = iconPlay;
+    toggleBtn.classList.remove('paused-state');
+    
+    updateDisplay(0); 
+    playAlarm();
+    
+    setTimeout(() => {
+      if (currentMode === 'work') {
+        completedCycles++;
+        updateCycleDots();
+        
+        if (completedCycles > 0 && completedCycles % CYCLES_BEFORE_LONG_BREAK === 0) {
+          setMode('long-break');
+        } else {
+          setMode('break');
+        }
+      } else {
+        setMode('work');
+      }
+    }, 1000); 
+  }
+
+  function resetTimer() {
+    if (isRunning) {
+      isRunning = false;
+      cancelAnimationFrame(animationFrameId);
+      clearInterval(watchdogInterval);
+      toggleBtn.innerHTML = iconPlay;
+      toggleBtn.classList.remove('paused-state');
+    }
+    remainingMs = currentModeTimeMs;
+    updateDisplay(remainingMs);
+  }
+
+  function setMode(mode) {
+    if (isRunning) {
+      isRunning = false;
+      cancelAnimationFrame(animationFrameId);
+      clearInterval(watchdogInterval);
+      toggleBtn.innerHTML = iconPlay;
+      toggleBtn.classList.remove('paused-state');
+    }
+
+    currentMode = mode;
+    currentModeTimeMs = timeSettings[mode] * 1000;
+    remainingMs = currentModeTimeMs;
+
+    document.querySelectorAll('.mode-buttons button').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`${mode}ModeBtn`).classList.add('active');
+
+    body.className = `mode-${mode}`;
+
+    updateDisplay(remainingMs);
+  }
+
+  function playAlarm() {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    const playBeep = (startTime) => {
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, startTime); 
+      
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(0.5, startTime + 0.05);
+      gainNode.gain.linearRampToValueAtTime(0, startTime + 0.3);
+      
+      osc.start(startTime);
+      osc.stop(startTime + 0.3);
+    };
+
+    const now = audioCtx.currentTime;
+    playBeep(now);       
+    playBeep(now + 0.4); 
+  }
+
+  const modal = document.getElementById('settingsModal');
+  
+  function openSettings() {
+    if (isRunning) {
+      isRunning = false;
+      cancelAnimationFrame(animationFrameId);
+      clearInterval(watchdogInterval);
+      toggleBtn.innerHTML = iconPlay;
+      toggleBtn.classList.remove('paused-state');
+    }
+    document.getElementById('themeInput').value = currentTheme;
+    document.getElementById('cycleInput').value = completedCycles;
+    modal.classList.add('show');
+  }
+
+  function closeSettings() {
+    modal.classList.remove('show');
+  }
+
+  function saveSettings() {
+    const t = document.getElementById('themeInput').value;
+    const c = parseInt(document.getElementById('cycleInput').value);
+    const w = parseInt(document.getElementById('workInput').value);
+    const b = parseInt(document.getElementById('breakInput').value);
+    const lb = parseInt(document.getElementById('longBreakInput').value);
+    
+    if (w > 0 && b > 0 && lb > 0 && c >= 0) {
+      currentTheme = t;
+      htmlDoc.setAttribute('data-theme', currentTheme);
+
+      completedCycles = c;
+      updateCycleDots();
+
+      timeSettings.work = w * 60;
+      timeSettings.break = b * 60;
+      timeSettings['long-break'] = lb * 60;
+      
+      currentModeTimeMs = timeSettings[currentMode] * 1000;
+      resetTimer();
+      closeSettings();
+    } else {
+      alert('正しい数値を入力してください（時間は1以上、サイクルは0以上）');
+    }
+  }
+
+  updateCycleDots();
+  updateDisplay(remainingMs);
+</script>
+
+</body>
+</html>
+
