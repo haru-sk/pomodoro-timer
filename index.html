@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ポモドーロ・タイマー (完成版)</title>
+<title>ポモドーロ・タイマー</title>
 <style>
   :root {
     --bg-color: #f1f5f9;
@@ -20,6 +20,7 @@
     --cancel-btn-bg: #e2e8f0;
     --cancel-btn-text: #475569;
     --reset-btn-bg: #94a3b8;
+    --cycle-dot-inactive: #cbd5e1;
   }
 
   [data-theme="dark"] {
@@ -37,6 +38,7 @@
     --cancel-btn-bg: #334155;
     --cancel-btn-text: #cbd5e1;
     --reset-btn-bg: #475569;
+    --cycle-dot-inactive: #334155;
   }
 
   body {
@@ -190,7 +192,7 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background-color: var(--btn-inactive-bg);
+    background-color: var(--cycle-dot-inactive);
     transition: background-color 0.3s;
   }
   
@@ -242,11 +244,11 @@
   }
   
   .setting-row input, .setting-row select {
-    padding: 6px;
+    padding: 6px 10px;
     background-color: var(--input-bg);
     color: var(--text-color);
     border: 1px solid var(--input-border);
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 0.95rem;
     transition: background-color 0.3s, color 0.3s, border-color 0.3s;
   }
@@ -257,12 +259,13 @@
   }
 
   .setting-row select {
-    width: auto;
-    min-width: 100px;
-    text-align: left;
-    padding-left: 8px;
-    padding-right: 8px;
+    width: 110px;
     cursor: pointer;
+    border-radius: 6px;
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    outline: none;
   }
   
   .setting-divider {
@@ -281,7 +284,7 @@
   .modal-buttons button {
     padding: 8px 16px;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.3s, color 0.3s;
@@ -530,7 +533,12 @@
     remainingMs = currentModeTimeMs;
 
     document.querySelectorAll('.mode-buttons button').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(`${mode}ModeBtn`).classList.add('active');
+    
+    let btnId = mode === 'long-break' ? 'longBreakModeBtn' : `${mode}ModeBtn`;
+    const targetBtn = document.getElementById(btnId);
+    if (targetBtn) {
+      targetBtn.classList.add('active');
+    }
 
     body.className = `mode-${mode}`;
 
@@ -558,7 +566,7 @@
     };
 
     const now = audioCtx.currentTime;
-    playBeep(now);       
+    playBeep(now);        
     playBeep(now + 0.4); 
   }
 
@@ -613,4 +621,3 @@
 
 </body>
 </html>
-
